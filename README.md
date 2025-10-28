@@ -27,31 +27,51 @@
 
 ### Prerequisites
 
-- Node.js 18+
-- [Nansen API Key](https://pro.nansen.ai/) - For trader analytics and PnL data
-- [Moralis API Key](https://moralis.io/) - For wallet portfolio balances
+- **Node.js 18+** - [Download here](https://nodejs.org/)
+- **Nansen API Key** - For trader analytics and PnL data
+  - Sign up at [https://pro.nansen.ai/](https://pro.nansen.ai/)
+  - Navigate to API settings to get your key
+- **Moralis API Key** - For wallet portfolio balances
+  - Sign up at [https://moralis.io/](https://moralis.io/)
+  - Create a new project and copy your API key
+  - Free tier is sufficient for development
 
 ### Installation
 
 ```bash
-# Clone the repo
+# 1. Clone the repo
 git clone https://github.com/yourusername/aureusanalytics.git
 cd aureusanalytics
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# Set up environment variables
+# 3. Set up environment variables
 cp .env.example .env
-# Edit .env and add your API keys:
-# NANSEN_API_KEY=your_nansen_key_here
-# MORALIS_API_KEY=your_moralis_key_here
+```
 
-# Start the app (runs both frontend and backend)
+Now edit the `.env` file and add your API keys:
+
+```env
+# Get your Nansen API key from https://pro.nansen.ai/
+NANSEN_API_KEY=your_nansen_key_here
+
+# Get your Moralis API key from https://moralis.io/
+MORALIS_API_KEY=your_moralis_key_here
+```
+
+**Important:** Don't use quotes around the API keys!
+
+```bash
+# 4. Start the app (runs both frontend and backend)
 npm run dev
 ```
 
-Open [http://localhost:8080](http://localhost:8080) in your browser.
+The app will start:
+- **Backend (Express)** on [http://localhost:3001](http://localhost:3001)
+- **Frontend (React)** on [http://localhost:8080](http://localhost:8080)
+
+Open [http://localhost:8080](http://localhost:8080) in your browser to use the app.
 
 ---
 
@@ -135,26 +155,43 @@ npm run lint
 
 ### Backend (Railway/Render recommended)
 
-1. Set environment variable: `NANSEN_API_KEY`
+1. Set environment variables:
+   - `NANSEN_API_KEY=your_key`
+   - `MORALIS_API_KEY=your_key`
 2. Start command: `node server.js`
-3. Update frontend API URL in `src/lib/nansen.ts`
+3. Update frontend API URL in `src/lib/nansen.ts` to point to your deployed backend
 
 ---
 
 ## Troubleshooting
 
 **"No API key found in request"**
-- Make sure `.env` file exists with `NANSEN_API_KEY=your_key`
-- No quotes around the API key
+- Make sure `.env` file exists with both API keys:
+  ```
+  NANSEN_API_KEY=your_key
+  MORALIS_API_KEY=your_key
+  ```
+- **Don't use quotes** around the API keys
+- Restart the backend server: `npm run dev:backend`
+
+**"MORALIS_API_KEY not found"**
+- Make sure you've added the Moralis API key to `.env`
+- Get your free API key at [https://moralis.io/](https://moralis.io/)
 - Restart the backend server
 
-**Port already in use**
-- Change port in `server.js` (line 4)
-- Or kill the process using the port
+**Port already in use (3001 or 8080)**
+- Kill the process: `lsof -ti:3001 | xargs kill` (Mac/Linux)
+- Or change ports in `server.js` (line 9) and `vite.config.ts`
 
 **CORS errors**
 - Make sure backend server is running on port 3001
 - Check `server.js` CORS configuration
+- Verify frontend is calling `http://localhost:3001/api/...`
+
+**Portfolio tab shows no data**
+- This uses Moralis API - make sure `MORALIS_API_KEY` is set
+- Check browser console for API errors
+- Verify the wallet has tokens with value > $1
 
 ---
 
@@ -166,5 +203,7 @@ MIT License - feel free to fork and modify!
 
 ## Credits
 
-Built with [Nansen API](https://nansen.ai) for blockchain analytics.
+Built with:
+- [Nansen API](https://nansen.ai) - Blockchain analytics and trader intelligence
+- [Moralis API](https://moralis.io) - Wallet balance and token data
 
