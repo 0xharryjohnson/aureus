@@ -122,10 +122,37 @@ const Index = () => {
     }
   };
 
+  // Build a map of wallets with their associated tokens
+  const walletTokenMap = new Map<string, { wallet: PnLLeaderboardEntry; tokens: string[] }>();
+
+  tokensData.forEach(tokenData => {
+    tokenData.wallets.forEach(wallet => {
+      if (!walletTokenMap.has(wallet.address)) {
+        walletTokenMap.set(wallet.address, {
+          wallet: { ...wallet },
+          tokens: []
+        });
+      }
+      const entry = walletTokenMap.get(wallet.address)!;
+      entry.tokens.push(tokenData.symbol);
+      // Accumulate PnL if wallet appears in multiple tokens
+      if (entry.tokens.length > 1) {
+        entry.wallet.pnl_usd_total += wallet.pnl_usd_total;
+        entry.wallet.pnl_usd_realised += wallet.pnl_usd_realised || 0;
+        entry.wallet.pnl_usd_unrealised += wallet.pnl_usd_unrealised || 0;
+      }
+    });
+  });
+
+  // Convert to array and add tokens info to each wallet
+  const uniqueWallets = Array.from(walletTokenMap.values())
+    .map(({ wallet, tokens }) => ({
+      ...wallet,
+      tokens, // Add tokens array to wallet object
+    }))
+    .sort((a, b) => b.pnl_usd_total - a.pnl_usd_total);
+
   const allWallets = tokensData.flatMap(t => t.wallets);
-  const uniqueWallets = Array.from(
-    new Map(allWallets.map(w => [w.address, w])).values()
-  ).sort((a, b) => b.pnl_usd_total - a.pnl_usd_total);
 
   return (
     <div className="min-h-screen bg-background">

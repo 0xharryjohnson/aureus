@@ -106,6 +106,21 @@ export function WalletList({ wallets, onSelectWallet, selectedForExport = new Se
                   </button>
                 </div>
 
+                {/* Show tokens this wallet traded */}
+                {(wallet as any).tokens && (wallet as any).tokens.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {(wallet as any).tokens.map((token: string) => (
+                      <Badge
+                        key={token}
+                        variant="outline"
+                        className="text-xs bg-blue-500/10 text-blue-400 border-blue-500/30"
+                      >
+                        {token}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-success" />
