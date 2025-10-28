@@ -143,31 +143,54 @@ export async function getWalletPnLSummary(
   return { data: summary };
 }
 
-// Get wallet portfolio/holdings
+// Get wallet portfolio using Moralis API (Nansen doesn't support wallet balances reliably)
 export async function getWalletPortfolio(address: string) {
-  const apiRes = await callNansenAPI('/portfolio/defi-holdings', 'POST', {
-    wallet_address: address,
-  });
-  
-  const protocols = apiRes?.protocols ?? [];
-  const holdings = protocols.flatMap((protocol: any) => 
-    (protocol.tokens ?? []).map((token: any) => ({
-      chain: protocol.chain ?? 'unknown',
-      token_address: token.address ?? '',
-      token_symbol: token.symbol ?? 'UNKNOWN',
-      token_name: token.symbol ?? 'Unknown Token',
-      balance: token.amount?.toString() ?? '0',
-      balance_usd: token.value_usd ?? 0,
-      price_usd: token.amount > 0 ? (token.value_usd ?? 0) / token.amount : 0,
-    }))
-  );
-  
-  return { 
-    data: { 
-      holdings,
-      summary: apiRes?.summary ?? null
-    } 
-  };
+  console.log(`[Portfolio] Fetching wallet balances from Moralis for: ${address}`);
+
+  try {
+    const response = await fetch(
+      `http://localhost:3001/api/moralis/wallets/${address}/tokens?chain=bsc&exclude_spam=true&limit=100&min_pair_side_liquidity_usd=500`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Moralis API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(`[Portfolio] Moralis response: ${data.result?.length ?? 0} tokens`);
+
+    // Filter tokens with USD value > $1 and map to our format
+    const holdings = (data.result ?? [])
+      .filter((token: any) => (token.usd_value ?? 0) > 1)
+      .map((token: any) => ({
+        chain: 'bnb',
+        token_address: token.token_address,
+        token_symbol: token.symbol,
+        token_name: token.name,
+        balance: token.balance_formatted,
+        balance_usd: token.usd_value,
+        price_usd: token.usd_price,
+        logo: token.logo || token.thumbnail,
+        native_token: token.native_token ?? false,
+      }));
+
+    console.log(`[Portfolio] Filtered to ${holdings.length} tokens with value > $1`);
+
+    return {
+      data: {
+        holdings,
+        total_value_usd: holdings.reduce((sum: number, h: any) => sum + h.balance_usd, 0),
+      }
+    };
+  } catch (error) {
+    console.error('[Portfolio] Error fetching from Moralis:', error);
+    return {
+      data: {
+        holdings: [],
+        total_value_usd: 0,
+      }
+    };
+  }
 }
 
 // Get multiple wallets' PnL summaries (processes in batches of 10)

@@ -28,7 +28,8 @@
 ### Prerequisites
 
 - Node.js 18+
-- [Nansen API Key](https://pro.nansen.ai/)
+- [Nansen API Key](https://pro.nansen.ai/) - For trader analytics and PnL data
+- [Moralis API Key](https://moralis.io/) - For wallet portfolio balances
 
 ### Installation
 
@@ -42,8 +43,9 @@ npm install
 
 # Set up environment variables
 cp .env.example .env
-# Edit .env and add your Nansen API key:
-# NANSEN_API_KEY=your_key_here
+# Edit .env and add your API keys:
+# NANSEN_API_KEY=your_nansen_key_here
+# MORALIS_API_KEY=your_moralis_key_here
 
 # Start the app (runs both frontend and backend)
 npm run dev
@@ -58,14 +60,15 @@ Open [http://localhost:8080](http://localhost:8080) in your browser.
 ### Architecture
 
 ```
-Frontend (React) → Backend Proxy (Express) → Nansen API
+Frontend (React) → Backend Proxy (Express) → Nansen API / Moralis API
   :8080                 :3001
 ```
 
 The Express server acts as a proxy to:
-- Keep your API key secure (never exposed to the browser)
+- Keep your API keys secure (never exposed to the browser)
 - Handle CORS issues
-- Forward requests to Nansen API
+- Forward requests to Nansen API (trader analytics, PnL data)
+- Forward requests to Moralis API (wallet portfolio balances)
 
 ### Project Structure
 
@@ -87,7 +90,7 @@ aureusanalytics/
 
 - **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui
 - **Backend:** Node.js, Express
-- **Data:** Nansen API
+- **Data:** Nansen API (trader analytics), Moralis API (wallet balances)
 - **Charts:** Recharts
 
 ---

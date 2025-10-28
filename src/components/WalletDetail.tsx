@@ -22,7 +22,7 @@ export function WalletDetail({ address, onClose }: WalletDetailProps) {
   const [loading, setLoading] = useState(true);
   const [pnlSummary, setPnlSummary] = useState<AddressPnLSummary | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioHolding[]>([]);
-  const [portfolioSummary, setPortfolioSummary] = useState<any | null>(null);
+  const [totalValue, setTotalValue] = useState<number>(0);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -38,12 +38,12 @@ export function WalletDetail({ address, onClose }: WalletDetailProps) {
 
       const [pnlData, portfolioData] = await Promise.all([
         getWalletPnLSummary(address, { dateFrom, dateTo }),
-        getWalletPortfolio(address).catch(() => ({ data: { holdings: [], summary: null } })),
+        getWalletPortfolio(address).catch(() => ({ data: { holdings: [], total_value_usd: 0 } })),
       ]);
-      
+
       setPnlSummary(pnlData.data);
       setPortfolio(portfolioData.data?.holdings || []);
-      setPortfolioSummary(portfolioData.data?.summary || null);
+      setTotalValue(portfolioData.data?.total_value_usd || 0);
     } catch (error) {
       console.error('Failed to load wallet data:', error);
       toast({
@@ -194,7 +194,7 @@ export function WalletDetail({ address, onClose }: WalletDetailProps) {
           </TabsContent>
 
           <TabsContent value="portfolio" className="space-y-3 mt-4">
-            <Portfolio holdings={portfolio} summary={portfolioSummary ?? undefined} />
+            <Portfolio holdings={portfolio} total_value_usd={totalValue} />
           </TabsContent>
 
           <TabsContent value="charts" className="space-y-4 mt-4">
